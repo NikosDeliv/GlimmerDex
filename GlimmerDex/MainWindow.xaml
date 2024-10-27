@@ -1,0 +1,103 @@
+﻿<Window x:Class="GlimmerDex.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GlimmerDex" Height="600" Width="800">
+    <Grid>
+        <!-- Search TextBox -->
+        <TextBox x:Name="pokemonSearchBox"
+                 HorizontalAlignment="Left"
+                 Height="23"
+                 Margin="10,10,0,0"
+                 VerticalAlignment="Top"
+                 Width="200"
+                 TextChanged="PokemonSearchBox_TextChanged"
+                 VerticalContentAlignment="Center" />
+
+        <!-- ListBox for showing the Pokémon list with Image and Name -->
+        <ListBox x:Name="pokemonListBox"
+                 HorizontalAlignment="Left"
+                 Height="250"
+                 Margin="10,40,0,0"
+                 VerticalAlignment="Top"
+                 Width="200"
+                 SelectionChanged="PokemonListBox_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Icon}" Width="30" Height="30" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Label to display the current Pokémon being hunted -->
+        <Label x:Name="currentPokemonLabel"
+               Content="Currently hunting: None"
+               HorizontalAlignment="Left"
+               Margin="230,40,0,0"
+               VerticalAlignment="Top" 
+               FontSize="16" FontWeight="Bold"/>
+
+        <!-- Image to display the icon of the selected Pokémon -->
+        <Image x:Name="selectedPokemonIcon"
+               Width="100"
+               Height="100"
+               HorizontalAlignment="Left"
+               Margin="230,70,0,0"
+               VerticalAlignment="Top"/>
+
+        <!-- Panel for hunting methods with labels and buttons arranged in a grid -->
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="230,200,0,0" VerticalAlignment="Top" Width="400" >
+
+            <!-- Random Encounters -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="encounterCountLabel" Content="Encounters: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addEncounterButton" Content="Add Encounter" Width="150" Click="AddEncounterButton_Click"/>
+            </StackPanel>
+
+            <!-- Eggs Hatched (Masuda Method) -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="eggsCountLabel" Content="Eggs Hatched: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addEggButton" Content="Add Egg Hatched" Width="150" Click="AddEggButton_Click"/>
+            </StackPanel>
+
+            <!-- Soft Resets -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="softresetsCountLabel" Content="Soft Resets: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addSoftResetsButton" Content="Add Soft Reset" Width="150" Click="AddSoftResetsButton_Click"/>
+            </StackPanel>
+
+            <!-- SOS Chaining -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="sosCountLabel" Content="SOS Chaining: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addSOSButton" Content="Add SOS Encounter" Width="150" Click="AddSOSButton_Click"/>
+            </StackPanel>
+
+            <!-- Catch Combo -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="catchComboCountLabel" Content="Catch Combo: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addCatchComboButton" Content="Add Catch Combo" Width="150" Click="AddCatchComboButton_Click"/>
+            </StackPanel>
+
+            <!-- Outbreaks -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="outbreakCountLabel" Content="Outbreaks: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addOutbreakButton" Content="Add Outbreak" Width="150" Click="AddOutbreakButton_Click"/>
+            </StackPanel>
+
+            <!-- DexNav Encounters -->
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                <Label x:Name="dexNavCountLabel" Content="DexNav Encounters: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="addDexNavButton" Content="Add DexNav" Width="150" Click="AddDexNavButton_Click"/>
+            </StackPanel>
+
+            <!-- Button to mark as shiny with spacing -->
+            <Button x:Name="shinyButton"
+                    Content="Mark as Shiny"
+                    Width="150"
+                    Margin="0,10,0,0"
+                    Click="ShinyButton_Click" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Window>
