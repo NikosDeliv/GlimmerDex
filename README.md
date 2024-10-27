@@ -27,10 +27,10 @@
 
 
 ## Usage
-*Search Pokémon: Use the search box to find specific Pokémon.
-*Track Encounters: Choose a hunting method and use the buttons to log encounters.
-*Mark as Shiny: Once found, use the Mark as Shiny button.
-*View Collection: See your collection of shiny Pokémon and track shiny-locked status.
+* Search Pokémon: Use the search box to find specific Pokémon.
+* Track Encounters: Choose a hunting method and use the buttons to log encounters.
+* Mark as Shiny: Once found, use the Mark as Shiny button.
+* View Collection: See your collection of shiny Pokémon and track shiny-locked status.
 
 
 ## License
