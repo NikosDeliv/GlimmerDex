@@ -33,6 +33,9 @@
 * View Collection: See your collection of shiny Pokémon and track shiny-locked status.
 
 
+
+![GlimmerDex](https://github.com/user-attachments/assets/646c563a-7a90-43fd-a74f-9990247a5631)
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
