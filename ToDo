@@ -1,9 +1,11 @@
 - Fix the loading problem and make it so it has to load every Pokémon once
 and not everytime the app is opened
 
-- Make a history of recent hunts
+- Section for history of recent hunts
 
-- something to look at completed hunts (maybe visual)
-(maybe add another counter for how many shinies of a particular pokemon you got)
+- Section to show completed hunts and an indicator of how many of a shiny pokemon you got
+(e.g. Poochyena x2)
 
-- Maybe add a Total Encounters across all pokemon or something 
+- Add a new counter for Total shinies
+
+-Maybe add the ability to see the shiny version of the Pokémon
