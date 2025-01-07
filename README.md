@@ -34,7 +34,9 @@
 
 
 
-![GlimmerDex](https://github.com/user-attachments/assets/646c563a-7a90-43fd-a74f-9990247a5631)
+![GlimmerDexMainTab](https://github.com/user-attachments/assets/a0e741fc-112f-4a31-a13f-53c9fd2592f3)
+
+![GlimmerDexShinyTab](https://github.com/user-attachments/assets/226eb2af-fc75-4a4f-8bd4-e06ff61ca433)
 
 ## License
 
