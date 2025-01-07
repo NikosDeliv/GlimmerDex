@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,14 +16,20 @@ namespace GlimmerDex
     {
         private const string ApiBaseUrl = "https://pokeapi.co/api/v2/pokemon/";
         private const string SaveFilePath = "pokemon_data.json";
+        private ObservableCollection<PokemonData> displayedPokemonList;
         private List<PokemonData> allPokemonList;
         private PokemonData currentPokemonData;
         private Dictionary<string, PokemonData> savedData = new Dictionary<string, PokemonData>();
+        private int currentIndex = 0;
+        private const int PageSize = 50;
+        private int totalPokemons = 1025;
 
         public MainWindow()
         {
             InitializeComponent();
-            LoadAllPokemonData();
+            displayedPokemonList = new ObservableCollection<PokemonData>();
+            pokemonListBox.ItemsSource = displayedPokemonList;
+            LoadAllPokemonDataAsync();
             LoadEncounterData();
             this.Closing += MainWindow_Closing;
         }
@@ -31,40 +39,99 @@ namespace GlimmerDex
             SaveEncounterData();
         }
 
-        private async void LoadAllPokemonData()
+        private async void LoadAllPokemonDataAsync()
         {
-            allPokemonList = new List<PokemonData>();
-            List<int> shinyLockedIds = new List<int> { 385, 494, 647, 720, 721, 789, 790, 801, 802, 808, 809, 891,
-            892, 893, 896, 897, 898, 905, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1014, 1015, 1016, 1017, 1020,
-            1021, 1022, 1023, 1024, 1025};
-            for (int id = 1; id <= 1025; id++)
+            try
             {
-                var pokemon = await GetPokemonAsync(id);
-                pokemon.IsShinyLocked = shinyLockedIds.Contains(id);
-                allPokemonList.Add(pokemon);
+                allPokemonList = new List<PokemonData>();
+                var shinyLockedIds = new HashSet<int> { 385, 494, 647, 720, 721, 789, 790, 801, 802, 808, 809, 891, 892, 893, 896, 897, 898, 905, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1014, 1015, 1016, 1017, 1020, 1021, 1022, 1023, 1024, 1025 };
+
+                int batchSize = 50; // Number of Pokémon to fetch in each batch
+                for (int i = 1; i <= totalPokemons; i += batchSize)
+                {
+                    var tasks = new List<Task<PokemonData>>();
+                    for (int id = i; id < i + batchSize && id <= totalPokemons; id++)
+                    {
+                        tasks.Add(GetPokemonAsync(id, shinyLockedIds.Contains(id)));
+                    }
+
+                    var pokemonDataList = await Task.WhenAll(tasks);
+                    allPokemonList.AddRange(pokemonDataList);
+
+                    UpdatePokemonListBox();
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while loading Pokémon data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UpdatePokemonListBox()
+        {
+            var pagedPokemonList = allPokemonList.Skip(currentIndex).Take(PageSize).ToList();
+            currentIndex += PageSize;
+
+            foreach (var pokemon in pagedPokemonList)
+            {
+                displayedPokemonList.Add(pokemon);
+            }
+        }
+
+        private async Task<PokemonData> GetPokemonAsync(int id, bool isShinyLocked)
+        {
+            int maxRetries = 3;
+            int delay = 2000; // 2 seconds delay between retries
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    using (HttpClientHandler handler = new HttpClientHandler())
+                    {
+                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                        using (HttpClient client = new HttpClient(handler))
+                        {
+                            client.Timeout = TimeSpan.FromSeconds(30); // Set timeout to 30 seconds
+                            var response = await client.GetStringAsync(ApiBaseUrl + id);
+                            var pokemon = JsonConvert.DeserializeObject<PokemonData>(response);
+                            pokemon.Icon = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png";
+                            pokemon.ShinyIcon = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/{id}.png";
+                            pokemon.IsShinyLocked = isShinyLocked;
+                            return pokemon;
+                        }
+                    }
+                }
+                catch (TaskCanceledException ex) when (ex.CancellationToken == CancellationToken.None)
+                {
+                    if (attempt == maxRetries)
+                    {
+                        throw new Exception($"Request timed out for Pokémon ID {id}: {ex.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (attempt == maxRetries)
+                    {
+                        throw new Exception($"Failed to fetch data for Pokémon ID {id}: {ex.Message}");
+                    }
+                }
+
+                await Task.Delay(delay);
+            }
+
+            throw new Exception($"Failed to fetch data for Pokémon ID {id} after {maxRetries} attempts.");
         }
 
         private void PokemonSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             string searchQuery = pokemonSearchBox.Text.ToLower();
-            List<PokemonData> filteredList = allPokemonList.FindAll(p => p.Name.ToLower().Contains(searchQuery));
+            var filteredList = allPokemonList.Where(p => p.Name.ToLower().Contains(searchQuery)).ToList();
 
-            pokemonListBox.Items.Clear();
+            displayedPokemonList.Clear();
             foreach (var pokemon in filteredList)
             {
-                pokemonListBox.Items.Add(pokemon);
-            }
-        }
-
-        private async Task<PokemonData> GetPokemonAsync(int id)
-        {
-            using (HttpClient client = new HttpClient())
-            {
-                var response = await client.GetStringAsync(ApiBaseUrl + id);
-                var pokemon = JsonConvert.DeserializeObject<PokemonData>(response);
-                pokemon.Icon = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png";
-                return pokemon;
+                displayedPokemonList.Add(pokemon);
             }
         }
 
@@ -79,15 +146,9 @@ namespace GlimmerDex
                 selectedPokemonIcon.Source = bitmap;
 
                 // Check if the Pokémon is shiny-locked and update button accordingly
-                if (currentPokemonData.IsShinyLocked)
-                {
-                    shinyButton.IsEnabled = false;
-                }
-                else
-                {
-                    shinyButton.IsEnabled = true;
-                }
+                shinyButton.IsEnabled = !currentPokemonData.IsShinyLocked;
 
+                // Reset encounter and method counts
                 encounterCountLabel.Content = "Encounters: 0";
                 eggsCountLabel.Content = "Eggs Hatched: 0";
                 sosCountLabel.Content = "SOS Encounters: 0";
@@ -112,13 +173,6 @@ namespace GlimmerDex
                     shinyButton.Content = currentPokemonData.IsShiny ? "Unmark Shiny" : "Mark as Shiny";
                     selectedPokemonIcon.Opacity = currentPokemonData.IsShiny ? 0.5 : 1.0;
                 }
-                else
-                {
-                    // Reset if no previous data
-                    encounterCountLabel.Content = "Encounters: 0";
-                    shinyButton.Content = "Mark as Shiny";
-                    selectedPokemonIcon.Opacity = 1.0;
-                }
             }
         }
 
@@ -141,6 +195,7 @@ namespace GlimmerDex
                 SaveEncounterData();
             }
         }
+
         private void AddSoftResetsButton_Click(object sender, RoutedEventArgs e)
         {
             if (currentPokemonData == null) return;
@@ -150,7 +205,6 @@ namespace GlimmerDex
             SaveEncounterData();
         }
 
-        // Button click event to add an SOS encounter
         private void AddSOSButton_Click(object sender, RoutedEventArgs e)
         {
             if (currentPokemonData == null) return;
@@ -160,7 +214,6 @@ namespace GlimmerDex
             SaveEncounterData();
         }
 
-        // Button click event to add a Catch Combo encounter
         private void AddCatchComboButton_Click(object sender, RoutedEventArgs e)
         {
             if (currentPokemonData == null) return;
@@ -170,7 +223,6 @@ namespace GlimmerDex
             SaveEncounterData();
         }
 
-        // Button click event to add an Outbreak encounter
         private void AddOutbreakButton_Click(object sender, RoutedEventArgs e)
         {
             if (currentPokemonData == null) return;
@@ -204,8 +256,16 @@ namespace GlimmerDex
                     shinyButton.Content = currentPokemonData.IsShiny ? "Unmark Shiny" : "Mark as Shiny";
                     selectedPokemonIcon.Opacity = currentPokemonData.IsShiny ? 0.5 : 1.0;
                     SaveEncounterData();
+                    UpdateShinyPokemonList();
                 }
             }
+        }
+
+        private void UpdateShinyPokemonList()
+        {
+            var shinyPokemonList = allPokemonList.FindAll(p => p.IsShiny);
+            shinyPokemonListBox.ItemsSource = null; // Ensure Items collection is empty before setting ItemsSource
+            shinyPokemonListBox.ItemsSource = shinyPokemonList;
         }
 
         private void LoadEncounterData()
@@ -225,12 +285,22 @@ namespace GlimmerDex
             }
             File.WriteAllText(SaveFilePath, JsonConvert.SerializeObject(savedData, Formatting.Indented));
         }
+
+        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            // Check if the user has scrolled to the bottom of the ScrollViewer
+            if (e.VerticalOffset == e.ExtentHeight - e.ViewportHeight)
+            {
+                UpdatePokemonListBox();
+            }
+        }
     }
 
     public class PokemonData
     {
         public string Name { get; set; }
         public string Icon { get; set; }
+        public string ShinyIcon { get; set; }
         public int Encounters { get; set; }
         public int EggsHatched { get; set; }
         public int SoftResets { get; set; }
