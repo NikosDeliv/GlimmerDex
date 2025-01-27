@@ -1,8 +1,6 @@
-- Recent hunts in search bar
-
 - Section to show completed hunts and an indicator of how many of a shiny pokemon you got
-(e.g. Poochyena x2) - Done
+(e.g. Poochyena x2) - Semi Done / Can see the completed ones in the Shiny tab but not the amount you have
 
 -Maybe add the ability to see the shiny version of the Pokémon - Done [You can see the shiny version in the Shiny Pokémon tab where you see the ones you got]
 
--add comments to code
+-add comments to the code
