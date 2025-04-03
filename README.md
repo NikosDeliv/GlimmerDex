@@ -33,10 +33,9 @@
 * View Collection: See your collection of shiny Pokémon and track shiny-locked status.
 
 
-
-![GlimmerDexMainTab](https://github.com/user-attachments/assets/a0e741fc-112f-4a31-a13f-53c9fd2592f3)
-
-![GlimmerDexShinyTab](https://github.com/user-attachments/assets/226eb2af-fc75-4a4f-8bd4-e06ff61ca433)
+![MainPage](https://github.com/user-attachments/assets/c2cd0782-0840-4cb0-a3e9-1043eee3a800)
+![ShinyPage](https://github.com/user-attachments/assets/1d703095-af6e-4163-834a-85850221b8eb)
+![ShinyDetails](https://github.com/user-attachments/assets/cd6317a6-628e-490f-822e-d6a73acb8c60)
 
 ## License
 
