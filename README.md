@@ -33,9 +33,6 @@
 * View Collection: See your collection of shiny Pokémon and track shiny-locked status.
 
 
-![MainPage](https://github.com/user-attachments/assets/c2cd0782-0840-4cb0-a3e9-1043eee3a800)
-![ShinyPage](https://github.com/user-attachments/assets/1d703095-af6e-4163-834a-85850221b8eb)
-![ShinyDetails](https://github.com/user-attachments/assets/cd6317a6-628e-490f-822e-d6a73acb8c60)
 
 ## License
 
