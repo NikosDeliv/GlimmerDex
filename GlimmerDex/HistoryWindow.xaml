@@ -1,0 +1,19 @@
+<Window x:Class="GlimmerDex.HistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="History" Height="400" Width="600">
+    <Grid>
+        <ListBox x:Name="historyListBox" Margin="10">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding PokemonName}" Width="150"/>
+                        <TextBlock Text="{Binding Encounters}" Width="50"/>
+                        <TextBlock Text="{Binding IsShiny}" Width="50"/>
+                        <TextBlock Text="{Binding Timestamp}" Width="150"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>
