@@ -6,7 +6,7 @@ namespace GlimmerDex
 {
     public partial class HistoryWindow : Window
     {
-        public ObservableCollection<HistoryEntry> HistoryEntries { get; set; }
+        public ObservableCollection<HistoryEntry> HistoryEntries { get; set; } // ObservableCollection to support data binding
 
         public HistoryWindow(List<HistoryEntry> historyEntries)
         {
