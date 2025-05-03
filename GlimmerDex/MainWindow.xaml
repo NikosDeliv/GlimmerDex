@@ -127,23 +127,43 @@
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0" VerticalAlignment="Center">
                     <Label Content="Game:" Width="60" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <ComboBox x:Name="gameSelector" Width="180" VerticalAlignment="Center">
-                        <ComboBoxItem Content="Pokémon Red/Blue/Yellow"/>
-                        <ComboBoxItem Content="Pokémon Gold/Silver/Crystal"/>
-                        <ComboBoxItem Content="Pokémon Ruby/Sapphire/Emerald"/>
-                        <ComboBoxItem Content="Pokémon FireRed/LeafGreen"/>
-                        <ComboBoxItem Content="Pokémon Diamond/Pearl/Platinum"/>
-                        <ComboBoxItem Content="Pokémon HeartGold/SoulSilver"/>
-                        <ComboBoxItem Content="Pokémon Black/White"/>
-                        <ComboBoxItem Content="Pokémon Black 2/White 2"/>
-                        <ComboBoxItem Content="Pokémon X/Y"/>
-                        <ComboBoxItem Content="Pokémon Omega Ruby/Alpha Sapphire"/>
-                        <ComboBoxItem Content="Pokémon Sun/Moon"/>
-                        <ComboBoxItem Content="Pokémon Ultra Sun/Ultra Moon"/>
-                        <ComboBoxItem Content="Pokémon Let's Go Pikachu/Eevee"/>
-                        <ComboBoxItem Content="Pokémon Sword/Shield"/>
-                        <ComboBoxItem Content="Pokémon Brilliant Diamond/Shining Pearl"/>
+                        <ComboBoxItem Content="Pokémon Red"/>
+						<ComboBoxItem Content="Pokémon Blue"/>
+						<ComboBoxItem Content="Pokémon Yellow"/>
+                        <ComboBoxItem Content="Pokémon Gold"/>
+						<ComboBoxItem Content="Pokémon Silver"/>
+						<ComboBoxItem Content="Pokémon Crystal"/>
+						<ComboBoxItem Content="Pokémon Ruby"/>
+						<ComboBoxItem Content="Pokémon Sapphire"/>
+						<ComboBoxItem Content="Pokémon Emerald"/>
+						<ComboBoxItem Content="Pokémon FireRed"/>
+						<ComboBoxItem Content="Pokémon LeafGreen"/>
+						<ComboBoxItem Content="Pokémon Diamond"/>
+						<ComboBoxItem Content="Pokémon Pearl"/>
+						<ComboBoxItem Content="Pokémon Platinum"/>
+                        <ComboBoxItem Content="Pokémon HeartGold"/>
+						<ComboBoxItem Content="Pokémon SoulSilver"/>
+                        <ComboBoxItem Content="Pokémon Black"/>
+						<ComboBoxItem Content="Pokémon White"/>
+                        <ComboBoxItem Content="Pokémon Black 2"/>
+						<ComboBoxItem Content="Pokémon White 2"/>
+                        <ComboBoxItem Content="Pokémon X"/>
+						<ComboBoxItem Content="Pokémon Y"/>
+                        <ComboBoxItem Content="Pokémon Omega Ruby"/>
+						<ComboBoxItem Content="Pokémon Alpha Sapphire"/>
+                        <ComboBoxItem Content="Pokémon Sun"/>
+						<ComboBoxItem Content="Pokémon Moon"/>
+                        <ComboBoxItem Content="Pokémon Ultra Sun"/>
+						<ComboBoxItem Content="Pokémon Ultra Moon"/>
+                        <ComboBoxItem Content="Pokémon Let's Go Pikachu"/>
+						<ComboBoxItem Content="Pokémon Let's Go Eevee"/>
+                        <ComboBoxItem Content="Pokémon Sword"/>
+						<ComboBoxItem Content="Pokémon Shield"/>
+                        <ComboBoxItem Content="Pokémon Brilliant Diamond"/>
+						<ComboBoxItem Content="Pokémon Shining Pearl"/>
                         <ComboBoxItem Content="Pokémon Legends: Arceus"/>
-                        <ComboBoxItem Content="Pokémon Scarlet/Violet"/>
+                        <ComboBoxItem Content="Pokémon Scarlet"/>
+						<ComboBoxItem Content="Pokémon Violet"/>
                         <ComboBoxItem Content="Pokémon Home"/>
                     </ComboBox>
                 </StackPanel>
