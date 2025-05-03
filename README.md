@@ -3,7 +3,8 @@
 
 
 
-## Screenshots
+## Screenshots 
+Individual games can now be selected instead of the whole generation like shown in the screenshots below
 
 ![MainWindow](https://github.com/user-attachments/assets/155964b9-726a-4e41-af38-94a29bbbf72f)
 
