@@ -2,6 +2,15 @@
  GlimmerDex is a shiny hunting companion app that tracks encounters for every Pokémon across generations. Powered by PokéAPI, it supports methods like Random Encounters, Masuda, and DexNav. GlimmerDex logs your shiny collection, checks for shiny-locked Pokémon, and makes tracking your shiny progress easy and efficient!
 
 
+
+## Screenshots
+
+![MainWindow](https://github.com/user-attachments/assets/155964b9-726a-4e41-af38-94a29bbbf72f)
+
+![ShinyCollection](https://github.com/user-attachments/assets/a0a8dd9e-7316-490a-85ad-acb6345636c0)
+![ShinyInfo](https://github.com/user-attachments/assets/3ab73ad6-2df8-4fd7-93f9-d80ad80485a2)
+![HistoryWindow](https://github.com/user-attachments/assets/8700173c-ff3a-458d-b0fa-04063a92bef7)
+
 ## Features
 - Tracks encounters for multiple shiny hunting methods (Random, Masuda, Soft Reset, SOS, etc.)
 - Displays and organizes shiny Pokémon collections
