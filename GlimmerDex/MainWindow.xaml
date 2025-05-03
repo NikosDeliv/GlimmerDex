@@ -2,6 +2,16 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="GlimmerDex" Height="600" Width="1000">
+    <Window.Resources>
+        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#3B3B3B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,5,0,5"/>
+            <Setter Property="Padding" Value="10,5,10,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+    </Window.Resources>
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="200"/>
@@ -18,6 +28,7 @@
 			<Button Content="Home" Click="HomeButton_Click" Style="{StaticResource SidebarButtonStyle}"/>
 			<Button Content="Shiny Pokémon" Click="ShinyPokemonButton_Click" Style="{StaticResource SidebarButtonStyle}"/>
 			<Button Content="History" Click="HistoryButton_Click" Style="{StaticResource SidebarButtonStyle}"/>
+            <Label x:Name="totalShiniesLabel" Content="Total Shinies: 0" Foreground="White" Margin="0,20,0,0" HorizontalAlignment="Center"/>
 		</StackPanel>
 
 		<!-- Home Content -->
@@ -33,7 +44,7 @@
                      VerticalContentAlignment="Center" />
 
 			<!-- ScrollViewer for infinite scroll -->
-			<ScrollViewer HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Width="200" Height="Auto" VerticalScrollBarVisibility="Auto">
+			<ScrollViewer HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Width="200" Height="Auto" VerticalScrollBarVisibility="Auto" ScrollChanged="ScrollViewer_ScrollChanged">
 				<!-- StackPanel for showing the Pokémon list with Image and Name -->
 				<ItemsControl ItemsSource="{Binding DisplayedPokemonList}">
 					<ItemsControl.ItemsPanel>
@@ -88,126 +99,97 @@
 					<Button x:Name="addSoftResetsButton" Content="Add Soft Reset" Width="150" Click="AddSoftResetsButton_Click" IsEnabled="False"/>
 				</StackPanel>
 
-				<!-- SOS Chaining -->
-				<StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
-					<Label x:Name="sosCountLabel" Content="SOS Chaining: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-					<Button x:Name="addSOSButton" Content="Add SOS Encounter" Width="150" Click="AddSOSButton_Click" IsEnabled="False"/>
-				</StackPanel>
+                <!-- SOS Chain -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                    <Label x:Name="sosCountLabel" Content="SOS Encounters: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Button x:Name="addSOSButton" Content="Add SOS Encounter" Width="150" Click="AddSOSButton_Click" IsEnabled="False"/>
+                </StackPanel>
 
-				<!-- Catch Combo -->
-				<StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
-					<Label x:Name="catchComboCountLabel" Content="Catch Combo: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-					<Button x:Name="addCatchComboButton" Content="Add Catch Combo" Width="150" Click="AddCatchComboButton_Click" IsEnabled="False"/>
-				</StackPanel>
+                <!-- Catch Combo -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                    <Label x:Name="catchComboCountLabel" Content="Catch Combo: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Button x:Name="addCatchComboButton" Content="Add Catch Combo" Width="150" Click="AddCatchComboButton_Click" IsEnabled="False"/>
+                </StackPanel>
 
-				<!-- Outbreaks -->
-				<StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
-					<Label x:Name="outbreakCountLabel" Content="Outbreaks: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-					<Button x:Name="addOutbreakButton" Content="Add Outbreak" Width="150" Click="AddOutbreakButton_Click" IsEnabled="False"/>
-				</StackPanel>
+                <!-- Outbreak -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                    <Label x:Name="outbreakCountLabel" Content="Outbreaks: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Button x:Name="addOutbreakButton" Content="Add Outbreak" Width="150" Click="AddOutbreakButton_Click" IsEnabled="False"/>
+                </StackPanel>
 
-				<!-- DexNav Encounters -->
-				<StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
-					<Label x:Name="dexNavCountLabel" Content="DexNav Encounters: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-					<Button x:Name="addDexNavButton" Content="Add DexNav" Width="150" Click="AddDexNavButton_Click" IsEnabled="False"/>
-				</StackPanel>
+                <!-- DexNav -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
+                    <Label x:Name="dexNavCountLabel" Content="DexNav Encounters: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Button x:Name="addDexNavButton" Content="Add DexNav Encounter" Width="150" Click="AddDexNavButton_Click" IsEnabled="False"/>
+                </StackPanel>
 
-				<!-- Game Selector -->
-				<StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center">
-					<Label Content="Game:" Width="60" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-					<ComboBox x:Name="gameSelector" Width="150" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,0">
-						<ComboBoxItem Content="Pokemon Red" />
-						<ComboBoxItem Content="Pokemon Blue" />
-						<ComboBoxItem Content="Pokemon Green" />
-						<ComboBoxItem Content="Pokemon Yellow" />
-						<ComboBoxItem Content="Pokemon Gold" />
-						<ComboBoxItem Content="Pokemon Silver" />
-						<ComboBoxItem Content="Pokemon Crystal" />
-						<ComboBoxItem Content="Pokemon Ruby" />
-						<ComboBoxItem Content="Pokemon Sapphire" />
-						<ComboBoxItem Content="Pokemon Emerald" />
-						<ComboBoxItem Content="Pokemon FireRed" />
-						<ComboBoxItem Content="Pokemon LeafGreen" />
-						<ComboBoxItem Content="Pokemon Diamond" />
-						<ComboBoxItem Content="Pokemon Pearl" />
-						<ComboBoxItem Content="Pokemon Platinum" />
-						<ComboBoxItem Content="Pokemon HeartGold" />
-						<ComboBoxItem Content="Pokemon SoulSilver" />
-						<ComboBoxItem Content="Pokemon Black" />
-						<ComboBoxItem Content="Pokemon White" />
-						<ComboBoxItem Content="Pokemon Black 2" />
-						<ComboBoxItem Content="Pokemon White 2" />
-						<ComboBoxItem Content="Pokemon X" />
-						<ComboBoxItem Content="Pokemon Y" />
-						<ComboBoxItem Content="Pokemon Omega Ruby" />
-						<ComboBoxItem Content="Pokemon Alpha Sapphire" />
-						<ComboBoxItem Content="Pokemon Sun" />
-						<ComboBoxItem Content="Pokemon Moon" />
-						<ComboBoxItem Content="Pokemon Ultra Sun" />
-						<ComboBoxItem Content="Pokemon Ultra Moon" />
-						<ComboBoxItem Content="Pokemon: Let's Go, Pikachu!" />
-						<ComboBoxItem Content="Pokemon: Let's Go, Eevee!" />
-						<ComboBoxItem Content="Pokemon Sword" />
-						<ComboBoxItem Content="Pokemon Shield" />
-						<ComboBoxItem Content="Pokemon Brilliant Diamond" />
-						<ComboBoxItem Content="Pokemon Shining Pearl" />
-						<ComboBoxItem Content="Pokemon Legends: Arceus" />
-						<ComboBoxItem Content="Pokemon Scarlet" />
-						<ComboBoxItem Content="Pokemon Violet" />
-					</ComboBox>
-				</StackPanel>
+                <!-- Game Selection ComboBox -->
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,0" VerticalAlignment="Center">
+                    <Label Content="Game:" Width="60" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="gameSelector" Width="180" VerticalAlignment="Center">
+                        <ComboBoxItem Content="Pokémon Red/Blue/Yellow"/>
+                        <ComboBoxItem Content="Pokémon Gold/Silver/Crystal"/>
+                        <ComboBoxItem Content="Pokémon Ruby/Sapphire/Emerald"/>
+                        <ComboBoxItem Content="Pokémon FireRed/LeafGreen"/>
+                        <ComboBoxItem Content="Pokémon Diamond/Pearl/Platinum"/>
+                        <ComboBoxItem Content="Pokémon HeartGold/SoulSilver"/>
+                        <ComboBoxItem Content="Pokémon Black/White"/>
+                        <ComboBoxItem Content="Pokémon Black 2/White 2"/>
+                        <ComboBoxItem Content="Pokémon X/Y"/>
+                        <ComboBoxItem Content="Pokémon Omega Ruby/Alpha Sapphire"/>
+                        <ComboBoxItem Content="Pokémon Sun/Moon"/>
+                        <ComboBoxItem Content="Pokémon Ultra Sun/Ultra Moon"/>
+                        <ComboBoxItem Content="Pokémon Let's Go Pikachu/Eevee"/>
+                        <ComboBoxItem Content="Pokémon Sword/Shield"/>
+                        <ComboBoxItem Content="Pokémon Brilliant Diamond/Shining Pearl"/>
+                        <ComboBoxItem Content="Pokémon Legends: Arceus"/>
+                        <ComboBoxItem Content="Pokémon Scarlet/Violet"/>
+                        <ComboBoxItem Content="Pokémon Home"/>
+                    </ComboBox>
+                </StackPanel>
 
-				<!-- Total Shinies Counter -->
-				<StackPanel Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
-					<Label x:Name="totalShiniesLabel" Content="Total Shinies: 0" Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-				</StackPanel>
-
-				<!-- Button to mark as shiny with spacing -->
-				<Button x:Name="shinyButton"
-                        Content="Mark as Shiny"
-                        Width="150"
-                        Margin="0,10,0,0"
-                        Click="ShinyButton_Click" HorizontalAlignment="Center" IsEnabled="False"/>
-			</StackPanel>
+                <!-- Shiny Button -->
+                <Button x:Name="shinyButton" 
+                        Content="Add Shiny (0)" 
+                        Width="200" 
+                        Height="40" 
+                        Margin="0,20,0,0" 
+                        Background="#FFD700" 
+                        FontWeight="Bold" 
+                        Click="ShinyButton_Click" 
+                        IsEnabled="False"/>
+            </StackPanel>
 		</Grid>
 
-		<!-- Shiny Pokémon Content -->
-		<Grid x:Name="shinyGrid" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Margin="10" Visibility="Collapsed">
-			<ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
-				<ItemsControl x:Name="shinyPokemonList" ItemsSource="{Binding DisplayedPokemonList}" MouseLeftButtonUp="ShinyPokemon_Click">
-					<ItemsControl.ItemsPanel>
-						<ItemsPanelTemplate>
-							<WrapPanel />
-						</ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<Border BorderBrush="Black" BorderThickness="1" Margin="5" Padding="5">
-								<StackPanel>
-									<Image Source="{Binding ShinyIcon}" Width="50" Height="50" Margin="0,0,0,5"/>
-									<TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center"/>
-									<ItemsControl ItemsSource="{Binding GameEncounters}">
-										<ItemsControl.ItemTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<TextBlock Text="{Binding Key}" FontWeight="Bold"/>
-													<TextBlock Text="{Binding Value.Encounters, StringFormat='Encounters: {0}'}"/>
-													<TextBlock Text="{Binding Value.EggsHatched, StringFormat='Eggs Hatched: {0}'}"/>
-													<TextBlock Text="{Binding Value.SoftResets, StringFormat='Soft Resets: {0}'}"/>
-													<TextBlock Text="{Binding Value.SOSEncounters, StringFormat='SOS Encounters: {0}'}"/>
-													<TextBlock Text="{Binding Value.CatchComboEncounters, StringFormat='Catch Combo: {0}'}"/>
-													<TextBlock Text="{Binding Value.OutbreakEncounters, StringFormat='Outbreaks: {0}'}"/>
-													<TextBlock Text="{Binding Value.DexNavEncounters, StringFormat='DexNav: {0}'}"/>
-												</StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
-								</StackPanel>
-							</Border>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
-			</ScrollViewer>
-		</Grid>
-	</Grid>
+        <!-- Shiny Pokémon Grid (Initially Hidden) -->
+        <Grid x:Name="shinyGrid" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Visibility="Collapsed" Margin="10">
+            <TextBlock Text="Your Shiny Collection" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Left" 
+                       Margin="10,10,0,0" 
+                       VerticalAlignment="Top"/>
+
+            <ListView x:Name="shinyPokemonList" 
+                      Margin="10,50,10,10">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" 
+                                    MouseLeftButtonUp="ShinyPokemon_Click">
+                            <Image Source="{Binding PokemonData.ShinyIcon}" 
+                                   Width="50" 
+                                   Height="50" 
+                                   Margin="0,0,10,0"/>
+                            <StackPanel>
+                                <TextBlock Text="{Binding PokemonData.Name}" 
+                                           FontWeight="Bold"/>
+                                <TextBlock Text="{Binding ShinyRecord.Game}"/>
+                                <TextBlock Text="{Binding ShinyRecord.CaptureDate, StringFormat=Caught: {0:d}}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
 </Window>

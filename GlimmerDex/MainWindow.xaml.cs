@@ -19,6 +19,7 @@ namespace GlimmerDex
         private const string ApiBaseUrl = "https://pokeapi.co/api/v2/pokemon/";
         private const string SaveFilePath = "pokemon_data.json";
         public ObservableCollection<PokemonData> DisplayedPokemonList { get; set; }
+        public ObservableCollection<ShinyPokemonDisplay> DisplayedShinyList { get; set; }
         private List<PokemonData> allPokemonList;
         private PokemonData currentPokemonData;
         private Dictionary<string, PokemonData> savedData = new Dictionary<string, PokemonData>();
@@ -32,6 +33,7 @@ namespace GlimmerDex
         {
             InitializeComponent();
             DisplayedPokemonList = new ObservableCollection<PokemonData>();
+            DisplayedShinyList = new ObservableCollection<ShinyPokemonDisplay>();
             allPokemonList = new List<PokemonData>();
             currentPokemonData = new PokemonData();
             DataContext = this;
@@ -277,7 +279,7 @@ namespace GlimmerDex
             if (currentPokemonData.IsShinyLocked)
             {
                 shinyButton.IsEnabled = false;
-                shinyButton.Content = "Shiny Locked"; 
+                shinyButton.Content = "Shiny Locked";
                 return;
             }
 
@@ -297,27 +299,31 @@ namespace GlimmerDex
                 return;
             }
 
-          
             string gameName = selectedGame.Content.ToString();
-            if (!currentPokemonData.GamesCaught.Contains(gameName))
-            {
-                currentPokemonData.GamesCaught.Add(gameName);
-            } // adds the game to the list of games caught
 
-            if (!currentPokemonData.GameEncounters.ContainsKey(gameName))
+            // Create a new ShinyRecord instance
+            var shinyRecord = new ShinyRecord
             {
-                currentPokemonData.GameEncounters[gameName] = new EncounterData(); // Initialize encounter data for the game
+                Game = gameName,
+                CaptureDate = DateTime.Now,
+                EncounterData = new EncounterData
+                {
+                    Encounters = currentPokemonData.Encounters,
+                    EggsHatched = currentPokemonData.EggsHatched,
+                    SoftResets = currentPokemonData.SoftResets,
+                    SOSEncounters = currentPokemonData.SOSEncounters,
+                    CatchComboEncounters = currentPokemonData.CatchComboEncounters,
+                    OutbreakEncounters = currentPokemonData.OutbreakEncounters,
+                    DexNavEncounters = currentPokemonData.DexNavEncounters
+                }
+            };
+
+            // Add the shiny record to the Pokemon's collection
+            if (currentPokemonData.ShinyRecords == null)
+            {
+                currentPokemonData.ShinyRecords = new List<ShinyRecord>();
             }
-
-            // Update encounter data for the game
-            var encounterData = currentPokemonData.GameEncounters[gameName];
-            encounterData.Encounters = currentPokemonData.Encounters;
-            encounterData.EggsHatched = currentPokemonData.EggsHatched;
-            encounterData.SoftResets = currentPokemonData.SoftResets;
-            encounterData.SOSEncounters = currentPokemonData.SOSEncounters;
-            encounterData.CatchComboEncounters = currentPokemonData.CatchComboEncounters;
-            encounterData.OutbreakEncounters = currentPokemonData.OutbreakEncounters;
-            encounterData.DexNavEncounters = currentPokemonData.DexNavEncounters;
+            currentPokemonData.ShinyRecords.Add(shinyRecord);
 
             // Reset encounter counts
             currentPokemonData.Encounters = 0;
@@ -354,34 +360,57 @@ namespace GlimmerDex
         }
 
         // Update the shiny Pokemon list
+
         private void UpdateShinyPokemonList()
         {
-            var shinyPokemonList = savedData.Values.Where(p => p.TotalShinies > 0).ToList(); // Filter shiny Pokemon
-            DisplayedPokemonList.Clear();
-            foreach (var shiny in shinyPokemonList)
+            DisplayedShinyList.Clear();
+
+            var shiniesData = savedData.Values.Where(p => p.TotalShinies > 0).ToList();
+
+            // For each Pokemon with shinies, create a display item for each shiny record
+            foreach (var pokemon in shiniesData)
             {
-                DisplayedPokemonList.Add(shiny);
+                if (pokemon.ShinyRecords != null && pokemon.ShinyRecords.Count > 0)
+                {
+                    foreach (var shinyRecord in pokemon.ShinyRecords)
+                    {
+                        DisplayedShinyList.Add(new ShinyPokemonDisplay
+                        {
+                            PokemonData = pokemon,
+                            ShinyRecord = shinyRecord
+                        });
+                    }
+                }
             }
+
+            shinyPokemonList.ItemsSource = DisplayedShinyList;
         }
 
         private void ShinyPokemon_Click(object sender, MouseButtonEventArgs e)
         {
-            if (((FrameworkElement)sender).DataContext is PokemonData shinyPokemon)
+            if (((FrameworkElement)sender).DataContext is ShinyPokemonDisplay shinyDisplay)
             {
-                ShowShinyPokemonCard(shinyPokemon);
+                ShowShinyPokemonCard(shinyDisplay);
             }
         }
 
-        // Show shiny Pokemon card with details (game encounters, etc.)
-        private void ShowShinyPokemonCard(PokemonData shinyPokemon)
+        // Show shiny Pokemon card with details
+        private void ShowShinyPokemonCard(ShinyPokemonDisplay shinyDisplay)
         {
-            var encounterDetails = shinyPokemon.GameEncounters
-                .Select(kvp => $"Game: {kvp.Key}\nEncounters: {kvp.Value.Encounters}\nEggs Hatched: {kvp.Value.EggsHatched}\nSoft Resets: {kvp.Value.SoftResets}\nSOS Encounters: {kvp.Value.SOSEncounters}\nCatch Combo: {kvp.Value.CatchComboEncounters}\nOutbreaks: {kvp.Value.OutbreakEncounters}\nDexNav Encounters: {kvp.Value.DexNavEncounters}")
-                .ToList();
+            var pokemon = shinyDisplay.PokemonData;
+            var record = shinyDisplay.ShinyRecord;
 
-            var encounterDetailsString = string.Join("\n\n", encounterDetails);
+            var encounterInfo = $"Game: {record.Game}\n" +
+                               $"Capture Date: {record.CaptureDate}\n" +
+                               $"Encounters: {record.EncounterData.Encounters}\n" +
+                               $"Eggs Hatched: {record.EncounterData.EggsHatched}\n" +
+                               $"Soft Resets: {record.EncounterData.SoftResets}\n" +
+                               $"SOS Encounters: {record.EncounterData.SOSEncounters}\n" +
+                               $"Catch Combo: {record.EncounterData.CatchComboEncounters}\n" +
+                               $"Outbreaks: {record.EncounterData.OutbreakEncounters}\n" +
+                               $"DexNav Encounters: {record.EncounterData.DexNavEncounters}";
 
-            MessageBox.Show($"Name: {shinyPokemon.Name}\nTotal Shinies: {shinyPokemon.TotalShinies}\nGames Caught: {string.Join(", ", shinyPokemon.GamesCaught)}\n\n{encounterDetailsString}",
+            MessageBox.Show($"Name: {pokemon.Name}\n\n{encounterInfo}",
                             "Shiny Pokémon Details", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -392,8 +421,31 @@ namespace GlimmerDex
             {
                 var jsonData = File.ReadAllText(SaveFilePath);
                 savedData = JsonConvert.DeserializeObject<Dictionary<string, PokemonData>>(jsonData) ?? new Dictionary<string, PokemonData>();
+
+                // Calculate global total shinies
                 globalTotalShinies = savedData.Values.Sum(p => p.TotalShinies);
                 totalShiniesLabel.Content = $"Total Shinies: {globalTotalShinies}";
+
+                // Ensure backward compatibility - convert old format to new if needed
+                foreach (var pokemon in savedData.Values)
+                {
+                    if (pokemon.TotalShinies > 0 &&
+                        (pokemon.ShinyRecords == null || pokemon.ShinyRecords.Count == 0) &&
+                        pokemon.GameEncounters != null && pokemon.GameEncounters.Count > 0)
+                    {
+                        // Convert old format to new
+                        pokemon.ShinyRecords = new List<ShinyRecord>();
+                        foreach (var gameEncounter in pokemon.GameEncounters)
+                        {
+                            pokemon.ShinyRecords.Add(new ShinyRecord
+                            {
+                                Game = gameEncounter.Key,
+                                CaptureDate = DateTime.Now, // Use current date as we don't have the original
+                                EncounterData = gameEncounter.Value
+                            });
+                        }
+                    }
+                }
             }
         }
 
@@ -415,8 +467,7 @@ namespace GlimmerDex
                 UpdatePokemonListBox();
             }
         }
-        
-        
+
         private void ShinyPokemonButton_Click(object sender, RoutedEventArgs e)
         {
             homeGrid.Visibility = Visibility.Collapsed;
@@ -453,8 +504,26 @@ namespace GlimmerDex
         public bool IsShiny { get; set; }
         public bool IsShinyLocked { get; set; }
         public int TotalShinies { get; set; }
+
+        // Legacy fields - kept for backward compatibility
         public List<string> GamesCaught { get; set; } = new List<string>();
         public Dictionary<string, EncounterData> GameEncounters { get; set; } = new Dictionary<string, EncounterData>();
+
+        // New field for individual shiny records
+        public List<ShinyRecord> ShinyRecords { get; set; } = new List<ShinyRecord>();
+    }
+
+    public class ShinyRecord
+    {
+        public required string Game { get; set; }
+        public DateTime CaptureDate { get; set; }
+        public required EncounterData EncounterData { get; set; }
+    }
+
+    public class ShinyPokemonDisplay
+    {
+        public required PokemonData PokemonData { get; set; }
+        public required ShinyRecord ShinyRecord { get; set; }
     }
 
     public class EncounterData // Represents the encounter data for each game and method
