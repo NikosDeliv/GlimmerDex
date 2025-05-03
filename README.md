@@ -20,13 +20,8 @@ Individual games can now be selected instead of the whole generation like shown 
 
 ## Installation
 
-### Option 1: Download the Published Zip File
-1. Go to the [Releases](https://github.com/YourUsername/GlimmerDex/releases) section of the GitHub repository.
-2. Download the latest zip file.
-3. Unzip the file to your preferred location.
-4. Run the `GlimmerDex.exe` file to start the application.
 
-### Option 2: Clone the Repository
+### Option 1: Clone the Repository
 1. Open a terminal or command prompt.
 2. Run the following command to clone the repository:
    ```bash
