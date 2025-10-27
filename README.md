@@ -6,11 +6,10 @@
 ## Screenshots 
 Individual games can now be selected instead of the whole generation like shown in the screenshots below
 
-![MainWindow](https://github.com/user-attachments/assets/155964b9-726a-4e41-af38-94a29bbbf72f)
 
-![ShinyCollection](https://github.com/user-attachments/assets/a0a8dd9e-7316-490a-85ad-acb6345636c0)
-![ShinyInfo](https://github.com/user-attachments/assets/3ab73ad6-2df8-4fd7-93f9-d80ad80485a2)
-![HistoryWindow](https://github.com/user-attachments/assets/8700173c-ff3a-458d-b0fa-04063a92bef7)
+<img width="1920" height="1080" alt="MainWindow" src="https://github.com/user-attachments/assets/60a00282-6a12-46d8-842c-54ae09213a25" />
+<img width="1920" height="1080" alt="Collection" src="https://github.com/user-attachments/assets/8763bbe7-fa3d-4cb4-8de0-3a99df557ef7" />
+<img width="933" height="686" alt="History" src="https://github.com/user-attachments/assets/69207d04-4869-4bbc-b695-78a819dd0876" />
 
 ## Features
 - Tracks encounters for multiple shiny hunting methods (Random, Masuda, Soft Reset, SOS, etc.)
