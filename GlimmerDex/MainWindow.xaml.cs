@@ -18,6 +18,8 @@ namespace GlimmerDex
     {
         private const string ApiBaseUrl = "https://pokeapi.co/api/v2/pokemon/";
         private const string SaveFilePath = "pokemon_data.json";
+        private const string HistoryFilePath = "history_data.json";
+
         public ObservableCollection<PokemonData> DisplayedPokemonList { get; set; }
         public ObservableCollection<ShinyPokemonDisplay> DisplayedShinyList { get; set; }
         private List<PokemonData> allPokemonList;
@@ -27,7 +29,7 @@ namespace GlimmerDex
         private const int PageSize = 100;
         private int totalPokemons = 1025;
         private int globalTotalShinies = 0;
-        private List<HistoryEntry> historyEntries = new List<HistoryEntry>();
+        private ObservableCollection<HistoryEntry> historyEntries = new ObservableCollection<HistoryEntry>();
 
         public MainWindow()
         {
@@ -37,22 +39,26 @@ namespace GlimmerDex
             allPokemonList = new List<PokemonData>();
             currentPokemonData = new PokemonData();
             DataContext = this;
+
             LoadAllPokemonDataAsync();
             LoadEncounterData();
+            LoadHistoryData();
+
             this.Closing += MainWindow_Closing;
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             SaveEncounterData();
+            SaveHistoryData();
         }
 
         private async void LoadAllPokemonDataAsync()
         {
             try
             {
-                //Current shiny locked Pokémon IDs. Will update if things change in the future.
-                var shinyLockedIds = new HashSet<int> { 385, 494, 647, 720, 721, 789, 790, 801, 802, 808, 809, 891, 892, 893, 896, 897, 898, 905, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1014, 1015, 1016, 1017, 1020, 1021, 1022, 1023, 1024, 1025 };
+                // Current shiny locked Pokémon IDs. Will update if things change in the future.
+                var shinyLockedIds = new HashSet<int> { 494, 647, 720, 721, 789, 790, 801, 802, 808, 809, 891, 892, 893, 896, 897, 898, 905, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1014, 1015, 1016, 1017, 1020, 1021, 1022, 1023, 1024, 1025 };
 
                 int batchSize = 50; // Number of Pokémon to fetch in each batch
                 for (int i = 1; i <= totalPokemons; i += batchSize)
@@ -60,7 +66,7 @@ namespace GlimmerDex
                     var tasks = new List<Task<PokemonData>>();
                     for (int id = i; id < i + batchSize && id <= totalPokemons; id++)
                     {
-                        tasks.Add(GetPokemonAsync(id, shinyLockedIds.Contains(id)));        // Check if the Pokémon is shiny-locked
+                        tasks.Add(GetPokemonAsync(id, shinyLockedIds.Contains(id))); // Check if the Pokémon is shiny locked
                     }
 
                     var pokemonDataList = await Task.WhenAll(tasks);
@@ -74,7 +80,7 @@ namespace GlimmerDex
                 MessageBox.Show($"An error occurred while loading Pokémon data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        // Scroller to load more Pokemon, once user scrolls to the bottom of the list 
+
         private void UpdatePokemonListBox()
         {
             var pagedPokemonList = allPokemonList.Skip(currentIndex).Take(PageSize).ToList();
@@ -104,6 +110,7 @@ namespace GlimmerDex
                             client.Timeout = TimeSpan.FromSeconds(30); // Set timeout to 30 seconds
                             var response = await client.GetStringAsync(ApiBaseUrl + id);
                             var pokemon = JsonConvert.DeserializeObject<PokemonData>(response);
+                            pokemon.Id = id;
                             pokemon.Icon = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png";
                             pokemon.ShinyIcon = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/{id}.png";
                             pokemon.IsShinyLocked = isShinyLocked;
@@ -156,7 +163,7 @@ namespace GlimmerDex
                 var bitmap = new BitmapImage(new Uri(currentPokemonData.Icon));
                 selectedPokemonIcon.Source = bitmap;
 
-                // Check if the Pokemon is shiny-locked and update button accordingly
+                // Check if the Pokemon is shiny locked and update button accordingly
                 shinyButton.IsEnabled = !currentPokemonData.IsShinyLocked;
 
                 // Enable encounter and method buttons
@@ -171,12 +178,12 @@ namespace GlimmerDex
                 // Reset encounter and method counts
                 encounterCountLabel.Content = "Encounters: 0";
                 eggsCountLabel.Content = "Eggs Hatched: 0";
-                sosCountLabel.Content = "SOS Encounters: 0";
+                sosCountLabel.Content = "SOS Chaining: 0";
                 outbreakCountLabel.Content = "Outbreaks: 0";
                 catchComboCountLabel.Content = "Catch Combo: 0";
                 softresetsCountLabel.Content = "Soft Resets: 0";
                 dexNavCountLabel.Content = "DexNav Encounters: 0";
-                shinyButton.Content = $"Add Shiny ({currentPokemonData.TotalShinies})";
+                shinyButton.Content = $"✨ FOUND SHINY! ({currentPokemonData.TotalShinies})";
                 selectedPokemonIcon.Opacity = 1.0;
 
                 // Load previous encounter and shiny data if it exists
@@ -196,75 +203,63 @@ namespace GlimmerDex
                 }
             }
         }
-        //self explanatory, adds encounters to the current Pokemon
+
+        // Consolidated encounter increment method (used by buttons) - REMOVED HISTORY LOGGING
+        private void AddEncounterTypeAndRecordHistory(Action incrementAction)
+        {
+            if (currentPokemonData == null) return;
+
+            incrementAction.Invoke();
+            UpdateEncounterLabels();
+            SaveEncounterData();
+        }
+
+        // Button handlers that use the consolidated method
         private void AddEncounterButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData != null)
-            {
-                currentPokemonData.Encounters++;
-                encounterCountLabel.Content = $"Encounters: {currentPokemonData.Encounters}";
-                SaveEncounterData();
-            }
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.Encounters++);
         }
-        // Adds eggs hatched to the current Pokemon
+
         private void AddEggButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData != null)
-            {
-                currentPokemonData.EggsHatched++;
-                eggsCountLabel.Content = $"Eggs Hatched: {currentPokemonData.EggsHatched}";
-                SaveEncounterData();
-            }
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.EggsHatched++);
         }
 
-        // Adds soft reset encounters to the current Pokemon
         private void AddSoftResetsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData == null) return;
-
-            currentPokemonData.SoftResets++;
-            softresetsCountLabel.Content = $"Soft Resets: {currentPokemonData.SoftResets}";
-            SaveEncounterData();
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.SoftResets++);
         }
 
-        // Adds SOS encounters to the current Pokemon
         private void AddSOSButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData == null) return;
-
-            currentPokemonData.SOSEncounters++;
-            sosCountLabel.Content = $"SOS Chaining: {currentPokemonData.SOSEncounters}";
-            SaveEncounterData();
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.SOSEncounters++);
         }
 
-        // Adds catch combo encounters to the current Pokemon
         private void AddCatchComboButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData == null) return;
-
-            currentPokemonData.CatchComboEncounters++;
-            catchComboCountLabel.Content = $"Catch Combo: {currentPokemonData.CatchComboEncounters}";
-            SaveEncounterData();
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.CatchComboEncounters++);
         }
 
-        //  Adds outbreak encounters to the current Pokemon
         private void AddOutbreakButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData == null) return;
-
-            currentPokemonData.OutbreakEncounters++;
-            outbreakCountLabel.Content = $"Outbreaks: {currentPokemonData.OutbreakEncounters}";
-            SaveEncounterData();
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.OutbreakEncounters++);
         }
 
-        // Adds DexNav encounters to the current Pokemon
         private void AddDexNavButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPokemonData == null) return;
+            AddEncounterTypeAndRecordHistory(() => currentPokemonData.DexNavEncounters++);
+        }
 
-            currentPokemonData.DexNavEncounters++;
+        private void UpdateEncounterLabels()
+        {
+            encounterCountLabel.Content = $"Encounters: {currentPokemonData.Encounters}";
+            eggsCountLabel.Content = $"Eggs Hatched: {currentPokemonData.EggsHatched}";
+            softresetsCountLabel.Content = $"Soft Resets: {currentPokemonData.SoftResets}";
+            sosCountLabel.Content = $"SOS Chaining: {currentPokemonData.SOSEncounters}";
+            catchComboCountLabel.Content = $"Catch Combo: {currentPokemonData.CatchComboEncounters}";
+            outbreakCountLabel.Content = $"Outbreaks: {currentPokemonData.OutbreakEncounters}";
             dexNavCountLabel.Content = $"DexNav Encounters: {currentPokemonData.DexNavEncounters}";
-            SaveEncounterData();
+            shinyButton.Content = $"Add Shiny ({currentPokemonData.TotalShinies})";
         }
 
         // Marks Pokemon as shiny
@@ -272,7 +267,7 @@ namespace GlimmerDex
         {
             if (currentPokemonData == null)
             {
-                MessageBox.Show("Please select a Pokémon first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error); // checks if a Pokemon is selected
+                MessageBox.Show("Please select a Pokémon first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -283,7 +278,6 @@ namespace GlimmerDex
                 return;
             }
 
-            // Check if the Pokémon has been encountered or hatched
             if (currentPokemonData.Encounters == 0 && currentPokemonData.EggsHatched == 0 && currentPokemonData.SoftResets == 0 &&
                 currentPokemonData.SOSEncounters == 0 && currentPokemonData.CatchComboEncounters == 0 && currentPokemonData.OutbreakEncounters == 0 &&
                 currentPokemonData.DexNavEncounters == 0)
@@ -295,7 +289,7 @@ namespace GlimmerDex
             var selectedGame = (ComboBoxItem)gameSelector.SelectedItem;
             if (selectedGame == null)
             {
-                MessageBox.Show("Please select a game first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error); // checks if a game is selected
+                MessageBox.Show("Please select a game first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -325,6 +319,28 @@ namespace GlimmerDex
             }
             currentPokemonData.ShinyRecords.Add(shinyRecord);
 
+            // Add to history - ONLY when catching a shiny
+            historyEntries.Insert(0, new HistoryEntry
+            {
+                PokemonName = currentPokemonData.Name,
+                PokemonId = currentPokemonData.Id,
+                Timestamp = DateTime.Now,
+                Game = gameName,
+                EncounterData = new EncounterData
+                {
+                    Encounters = shinyRecord.EncounterData.Encounters,
+                    EggsHatched = shinyRecord.EncounterData.EggsHatched,
+                    SoftResets = shinyRecord.EncounterData.SoftResets,
+                    SOSEncounters = shinyRecord.EncounterData.SOSEncounters,
+                    CatchComboEncounters = shinyRecord.EncounterData.CatchComboEncounters,
+                    OutbreakEncounters = shinyRecord.EncounterData.OutbreakEncounters,
+                    DexNavEncounters = shinyRecord.EncounterData.DexNavEncounters
+                }
+            });
+
+            if (historyEntries.Count > 10) historyEntries.RemoveAt(historyEntries.Count - 1);
+            SaveHistoryData();
+
             // Reset encounter counts
             currentPokemonData.Encounters = 0;
             currentPokemonData.EggsHatched = 0;
@@ -338,29 +354,21 @@ namespace GlimmerDex
             encounterCountLabel.Content = "Encounters: 0";
             eggsCountLabel.Content = "Eggs Hatched: 0";
             softresetsCountLabel.Content = "Soft Resets: 0";
-            sosCountLabel.Content = "SOS Encounters: 0";
+            sosCountLabel.Content = "SOS Chaining: 0";
             catchComboCountLabel.Content = "Catch Combo: 0";
             outbreakCountLabel.Content = "Outbreaks: 0";
             dexNavCountLabel.Content = "DexNav Encounters: 0";
 
             currentPokemonData.TotalShinies++;
             globalTotalShinies++;
-            shinyButton.Content = $"Add Shiny ({currentPokemonData.TotalShinies})";
+            shinyButton.Content = $"✨ FOUND SHINY! ({currentPokemonData.TotalShinies})";
 
-            // Add to history
-            historyEntries.Add(new HistoryEntry
-            {
-                PokemonName = currentPokemonData.Name,
-                Timestamp = DateTime.Now
-            });
-
-            totalShiniesLabel.Content = $"Total Shinies: {globalTotalShinies}";
+            totalShiniesLabel.Text = globalTotalShinies.ToString();
             SaveEncounterData();
             UpdateShinyPokemonList();
         }
 
         // Update the shiny Pokemon list
-
         private void UpdateShinyPokemonList()
         {
             DisplayedShinyList.Clear();
@@ -384,6 +392,12 @@ namespace GlimmerDex
             }
 
             shinyPokemonList.ItemsSource = DisplayedShinyList;
+
+            // Update the count label if it exists
+            if (shinyCountLabel != null)
+            {
+                shinyCountLabel.Text = DisplayedShinyList.Count.ToString();
+            }
         }
 
         private void ShinyPokemon_Click(object sender, MouseButtonEventArgs e)
@@ -405,7 +419,7 @@ namespace GlimmerDex
                                $"Encounters: {record.EncounterData.Encounters}\n" +
                                $"Eggs Hatched: {record.EncounterData.EggsHatched}\n" +
                                $"Soft Resets: {record.EncounterData.SoftResets}\n" +
-                               $"SOS Encounters: {record.EncounterData.SOSEncounters}\n" +
+                               $"SOS Chaining: {record.EncounterData.SOSEncounters}\n" +
                                $"Catch Combo: {record.EncounterData.CatchComboEncounters}\n" +
                                $"Outbreaks: {record.EncounterData.OutbreakEncounters}\n" +
                                $"DexNav Encounters: {record.EncounterData.DexNavEncounters}";
@@ -424,9 +438,9 @@ namespace GlimmerDex
 
                 // Calculate global total shinies
                 globalTotalShinies = savedData.Values.Sum(p => p.TotalShinies);
-                totalShiniesLabel.Content = $"Total Shinies: {globalTotalShinies}";
+                totalShiniesLabel.Text = globalTotalShinies.ToString();
 
-                // Ensure backward compatibility - convert old format to new if needed
+                // Ensure backward compatibility and convert old format to new if needed
                 foreach (var pokemon in savedData.Values)
                 {
                     if (pokemon.TotalShinies > 0 &&
@@ -445,6 +459,27 @@ namespace GlimmerDex
                             });
                         }
                     }
+                }
+            }
+        }
+
+        private void SaveHistoryData()
+        {
+            var json = JsonConvert.SerializeObject(historyEntries, Formatting.Indented);
+            File.WriteAllText(HistoryFilePath, json);
+        }
+
+        private void LoadHistoryData()
+        {
+            if (File.Exists(HistoryFilePath))
+            {
+                var json = File.ReadAllText(HistoryFilePath);
+                var loaded = JsonConvert.DeserializeObject<List<HistoryEntry>>(json);
+                if (loaded != null)
+                {
+                    historyEntries.Clear();
+                    foreach (var entry in loaded)
+                        historyEntries.Add(entry);
                 }
             }
         }
@@ -477,6 +512,15 @@ namespace GlimmerDex
 
         private void HistoryButton_Click(object sender, RoutedEventArgs e)
         {
+            foreach (Window window in Application.Current.Windows)
+            {
+                if (window is HistoryWindow hw)
+                {
+                    hw.Activate();
+                    return;
+                }
+            }
+
             var historyWindow = new HistoryWindow(historyEntries);
             historyWindow.Show();
         }
@@ -491,6 +535,7 @@ namespace GlimmerDex
 
     public class PokemonData // Represents the data for each Pokemon
     {
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Icon { get; set; } = string.Empty;
         public string ShinyIcon { get; set; } = string.Empty;
@@ -505,11 +550,9 @@ namespace GlimmerDex
         public bool IsShinyLocked { get; set; }
         public int TotalShinies { get; set; }
 
-        // Legacy fields - kept for backward compatibility
         public List<string> GamesCaught { get; set; } = new List<string>();
         public Dictionary<string, EncounterData> GameEncounters { get; set; } = new Dictionary<string, EncounterData>();
 
-        // New field for individual shiny records
         public List<ShinyRecord> ShinyRecords { get; set; } = new List<ShinyRecord>();
     }
 
